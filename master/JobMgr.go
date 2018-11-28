@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"context"
 	"fmt"
+	"go.etcd.io/etcd/mvcc/mvccpb"
 )
 
 type JobMgr struct {
@@ -107,5 +108,35 @@ func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 		}
 	}
 	oldJob = &oldJobObj
+	return
+}
+
+//实现列出所有Crontab的任务
+//返回Job列表
+func (jobMgr *JobMgr) ListJob() (jobList []*common.Job, err error) {
+	var (
+		dirKey  string
+		getResp *clientv3.GetResponse
+		kvpair  *mvccpb.KeyValue
+		job     *common.Job
+	)
+	//任务的目录
+	dirKey = common.Job_Save_Dir
+	if getResp, err = jobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
+		return
+	}
+	//初始化数组空间,默认为0，这样判断只需要判断数组是否为0
+	jobList = make([]*common.Job, 0)
+	//len(jobList)===0
+	//如果没有报错，那么遍历
+	for _, kvpair = range getResp.Kvs {
+		job = &common.Job{}
+		if err = json.Unmarshal(kvpair.Value, job); err != nil {
+			err = nil
+			continue //容忍反序列化失败
+		}
+		//append，拷贝
+		jobList = append(jobList, job)
+	}
 	return
 }

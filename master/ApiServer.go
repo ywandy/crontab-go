@@ -84,6 +84,28 @@ ERR:
 	return
 }
 
+
+//列举所有crontab任务
+func handleJobList(ctx *gin.Context)  {
+	var(
+		jobList []*common.Job
+		err error
+		respbyte []byte
+	)
+	if jobList,err = G_jobMgr.ListJob();err!=nil{
+		goto ERR
+	}
+	//正常的返回
+	respbyte = common.MakeResponse(0, "成功", jobList)
+	ctx.String(200, string(respbyte))
+	return
+ERR:
+//致命错误弹出
+	respbyte = common.MakeResponse(-1, "致命错误", string(err.Error()))
+	ctx.String(200, string(respbyte))
+	return
+}
+
 func InitApiServer() (err error) {
 	var (
 		router *gin.Engine
@@ -94,6 +116,7 @@ func InitApiServer() (err error) {
 	//注册路由
 	router.POST("/job/save", handleJobSave)
 	router.POST("/job/delete", handleJobDelete)
+	router.GET("/job/list", handleJobList)
 	//使用协程去启动
 	go router.Run(":" + strconv.Itoa(G_Config.API_PORT))
 	fmt.Println("web 服务器已经运行在", ":"+strconv.Itoa(G_Config.API_PORT))
