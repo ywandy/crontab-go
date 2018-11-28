@@ -30,9 +30,6 @@ func MakeResponse(erron int, msg string, data interface{}) (respon []byte) {
 	httpresponsecontent.Msg = msg
 	httpresponsecontent.Data = data
 	//序列化json
-	respon,_ = json.Marshal(httpresponsecontent)
+	respon, _ = json.Marshal(httpresponsecontent)
 	return
 }
-
-
-

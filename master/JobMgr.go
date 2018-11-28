@@ -60,7 +60,7 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 		oldJobObj common.Job
 	)
 	//保存key
-	jobKey = "/cron/jobs/" + job.Name
+	jobKey = common.Job_Save_Dir + job.Name
 	//序列化json得到jobval
 	if jobVal, err = json.Marshal(job); err != nil {
 		return
@@ -88,31 +88,24 @@ func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
 func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
 	//把任务保存 /cron/jobs/任务名 -> json
 	var (
-		jobKey    string
-		jobVal    []byte
-		putRespon *clientv3.PutResponse
-		oldJobObj common.Job
+		jobKey         string
+		deleteResponse *clientv3.DeleteResponse
+		oldJobObj      common.Job
 	)
-	//保存key
-	jobKey = "/cron/jobs/" + name
-	//序列化json得到jobval
-	if jobVal, err = json.Marshal(job); err != nil {
+	//得到要删除的任务的key
+	jobKey = common.Job_Save_Dir + name
+	//删除key
+	if deleteResponse, err = jobMgr.kv.Delete(context.TODO(), jobKey, clientv3.WithPrevKV()); err != nil {
 		return
 	}
-	//保存etcd
-	//保存成功返回旧值
-	if putRespon, err = jobMgr.kv.Put(context.TODO(), jobKey, string(jobVal), clientv3.WithPrevKV()); err != nil {
-		return
-	}
-	//如果是更新，那么是返回旧的值
-	if putRespon.PrevKv != nil {
-		//对旧值做反序列化
-		if err = json.Unmarshal(putRespon.PrevKv.Value, &oldJobObj); err != nil {
-			err = nil //不需要得到旧值是否合法
+	//返回被删除的信息
+	if len(deleteResponse.PrevKvs) != 0 {
+		//解析旧值
+		if err = json.Unmarshal(deleteResponse.PrevKvs[0].Value, &oldJobObj); err != nil {
+			err = nil //无论旧值是否能解析，只要能删除就好
 			return
 		}
-		//返回旧值
-		oldJob = &oldJobObj
 	}
+	oldJob = &oldJobObj
 	return
 }
