@@ -7,9 +7,11 @@ import (
 
 //配置文件的结构体
 type Config struct {
-	API_PORT          int `json:"api_port"`
-	API_Read_Timeout  int `json:"api_read_timeout"`
-	API_Write_Timeout int `json:"api_write_timeout"`
+	API_PORT          int      `json:"api_port"`
+	API_Read_Timeout  int      `json:"api_read_timeout"`
+	API_Write_Timeout int      `json:"api_write_timeout"`
+	EtcdEndpoints     []string `json:"etcdEndpoints"`
+	EtcdDialTimeout   int      `json:"etcdDialTimeout"`
 }
 
 var (

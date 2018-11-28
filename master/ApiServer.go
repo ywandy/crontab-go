@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net"
 	"time"
+	"strconv"
 )
 
 type ApiServer struct {
@@ -21,26 +22,26 @@ func handleJobSave(w http.ResponseWriter, r *http.Request) {
 }
 
 //初始化http服务(大写能被其他模块调用)
-func InitApiServer() (err error){
+func InitApiServer() (err error) {
 	//配置路由
 	var (
-		mux      *http.ServeMux
+		mux          *http.ServeMux
 		httpListener net.Listener
-		httpServer *http.Server
+		httpServer   *http.Server
 	)
 	mux = http.NewServeMux()
 	mux.HandleFunc("/job/save", handleJobSave)
-	if httpListener, err = net.Listen("tcp", ":8070"); err != nil {
+	if httpListener, err = net.Listen("tcp", ":"+strconv.Itoa(G_Config.API_PORT)); err != nil {
 		return
 	}
 	//创建http server
 	httpServer = &http.Server{
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  time.Duration(G_Config.API_Read_Timeout) * time.Millisecond,
+		WriteTimeout: time.Duration(G_Config.API_Write_Timeout) * time.Millisecond,
 		Handler:      mux,
 	}
 	G_ApiServer = &ApiServer{
-		httpServer:httpServer,
+		httpServer: httpServer,
 	}
 	go httpServer.Serve(httpListener)
 	return nil

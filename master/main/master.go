@@ -13,7 +13,9 @@ var (
 
 //命令行参数解析
 func initArgs() {
-	flag.StringVar()
+	flag.StringVar(&confFile, "config", "./master.json", "指定传入的配置文件")
+	//解析
+	flag.Parse()
 }
 
 //初始化一些环境
@@ -26,10 +28,19 @@ func main() {
 	var (
 		err error
 	)
-
+	//初始化命令行参数
+	initArgs()
 	//初始化线程
 	initEnv()
-	//加载配置
+	//加载配置文件
+	if err = master.InitConfig(confFile); err != nil {
+		goto ERR
+	}
+
+	//启动任务管理器(etcd)
+	if err = master.InitJobMgr(); err != nil {
+		goto ERR
+	}
 
 	//启动restful API HTTP服务
 	if err = master.InitApiServer(); err != nil {
