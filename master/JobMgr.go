@@ -3,6 +3,10 @@ package master
 import (
 	"go.etcd.io/etcd/clientv3"
 	"time"
+	"github.com/ywandy/crontab-go/common"
+	"encoding/json"
+	"context"
+	"fmt"
 )
 
 type JobMgr struct {
@@ -36,5 +40,79 @@ func InitJobMgr() (err error) {
 	//得到KV和lease的api子集
 	kv = clientv3.NewKV(client)
 	lease = clientv3.NewLease(client)
+	//赋值单例
+	G_jobMgr = &JobMgr{
+		client: client,
+		kv:     kv,
+		lease:  lease,
+	}
+	fmt.Println("初始化jobMgr完成")
+	return
+}
+
+//实现jobmgr保存
+func (jobMgr *JobMgr) SaveJob(job *common.Job) (oldJob *common.Job, err error) {
+	//把任务保存 /cron/jobs/任务名 -> json
+	var (
+		jobKey    string
+		jobVal    []byte
+		putRespon *clientv3.PutResponse
+		oldJobObj common.Job
+	)
+	//保存key
+	jobKey = "/cron/jobs/" + job.Name
+	//序列化json得到jobval
+	if jobVal, err = json.Marshal(job); err != nil {
+		return
+	}
+	//保存etcd
+	//保存成功返回旧值
+	if putRespon, err = jobMgr.kv.Put(context.TODO(), jobKey, string(jobVal), clientv3.WithPrevKV()); err != nil {
+		return
+	}
+	//如果是更新，那么是返回旧的值
+	if putRespon.PrevKv != nil {
+		//对旧值做反序列化
+		if err = json.Unmarshal(putRespon.PrevKv.Value, &oldJobObj); err != nil {
+			err = nil //不需要得到旧值是否合法
+			return
+		}
+		//返回旧值
+		oldJob = &oldJobObj
+	}
+	return
+}
+
+//实现jobmgr删除
+//返回删除结果
+func (jobMgr *JobMgr) DeleteJob(name string) (oldJob *common.Job, err error) {
+	//把任务保存 /cron/jobs/任务名 -> json
+	var (
+		jobKey    string
+		jobVal    []byte
+		putRespon *clientv3.PutResponse
+		oldJobObj common.Job
+	)
+	//保存key
+	jobKey = "/cron/jobs/" + name
+	//序列化json得到jobval
+	if jobVal, err = json.Marshal(job); err != nil {
+		return
+	}
+	//保存etcd
+	//保存成功返回旧值
+	if putRespon, err = jobMgr.kv.Put(context.TODO(), jobKey, string(jobVal), clientv3.WithPrevKV()); err != nil {
+		return
+	}
+	//如果是更新，那么是返回旧的值
+	if putRespon.PrevKv != nil {
+		//对旧值做反序列化
+		if err = json.Unmarshal(putRespon.PrevKv.Value, &oldJobObj); err != nil {
+			err = nil //不需要得到旧值是否合法
+			return
+		}
+		//返回旧值
+		oldJob = &oldJobObj
+	}
 	return
 }

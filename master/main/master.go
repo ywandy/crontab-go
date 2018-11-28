@@ -5,6 +5,8 @@ import (
 	"github.com/ywandy/crontab-go/master"
 	"fmt"
 	"flag"
+	"time"
+	"github.com/ywandy/crontab-go/common"
 )
 
 var (
@@ -22,12 +24,18 @@ func initArgs() {
 func initEnv() {
 	//线程和cpu数量相同
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	fmt.Println("初始化环境变量完成")
+	fmt.Println("--> 当前程序初始化线程数量:",runtime.NumCPU())
 }
 
 func main() {
 	var (
 		err error
 	)
+	//佛祖保佑
+	common.MakeBuddhaBless()
+	//程序介绍
+	common.Programintro()
 	//初始化命令行参数
 	initArgs()
 	//初始化线程
@@ -46,6 +54,14 @@ func main() {
 	if err = master.InitApiServer(); err != nil {
 		goto ERR
 	}
+	fmt.Println("程序启动完成")
+	fmt.Println("--> 当前Goroutine数量:",runtime.NumGoroutine())
+	//常驻服务
+	for{
+		time.Sleep(1*time.Second)
+	}
+
 ERR:
+//错误的操作
 	fmt.Println(err)
 }

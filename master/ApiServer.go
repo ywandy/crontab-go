@@ -2,9 +2,11 @@ package master
 
 import (
 	"net/http"
-	"net"
-	"time"
+	"github.com/gin-gonic/gin"
+	"fmt"
 	"strconv"
+	"github.com/ywandy/crontab-go/common"
+	"encoding/json"
 )
 
 type ApiServer struct {
@@ -16,33 +18,91 @@ var (
 	G_ApiServer *ApiServer
 )
 
-//保存任务的回调函数
-func handleJobSave(w http.ResponseWriter, r *http.Request) {
+//提交任务的接口
 
+func handleJobSave(ctx *gin.Context) {
+	var (
+		postjob  string //接收post表单的job字段
+		respbyte []byte
+		err      error
+		job      common.Job
+		oldjob   *common.Job
+	)
+	//解析表单
+	postjob = ctx.PostForm("job")
+	//判断表单
+	if postjob == "" {
+		respbyte = common.MakeResponse(-1, "Post错误", "参数不能为空")
+		ctx.String(200, string(respbyte))
+	}
+	//处理表单
+	//反序列化job
+	if err = json.Unmarshal([]byte(postjob), &job); err != nil {
+		goto ERR
+	}
+	if oldjob, err = G_jobMgr.SaveJob(&job); err != nil {
+		goto ERR
+	}
+	//返回值
+	respbyte = common.MakeResponse(0, "成功", oldjob)
+	ctx.String(200, string(respbyte))
+	return
+ERR:
+//致命错误弹出
+	respbyte = common.MakeResponse(-1, "致命错误", string(err.Error()))
+	ctx.String(200, string(respbyte))
+	return
 }
 
-//初始化http服务(大写能被其他模块调用)
-func InitApiServer() (err error) {
-	//配置路由
+//删除任务的接口
+// post {name=job1}
+func handleJobDelete(ctx *gin.Context) {
 	var (
-		mux          *http.ServeMux
-		httpListener net.Listener
-		httpServer   *http.Server
+		postjob  string //接收post表单的job字段
+		respbyte []byte
+		err      error
+		job      common.Job
+		oldjob   *common.Job
 	)
-	mux = http.NewServeMux()
-	mux.HandleFunc("/job/save", handleJobSave)
-	if httpListener, err = net.Listen("tcp", ":"+strconv.Itoa(G_Config.API_PORT)); err != nil {
-		return
+	//解析表单
+	postjob = ctx.PostForm("name")
+	//判断表单
+	if postjob == "" {
+		respbyte = common.MakeResponse(-1, "Post错误", "参数不能为空")
+		ctx.String(200, string(respbyte))
 	}
-	//创建http server
-	httpServer = &http.Server{
-		ReadTimeout:  time.Duration(G_Config.API_Read_Timeout) * time.Millisecond,
-		WriteTimeout: time.Duration(G_Config.API_Write_Timeout) * time.Millisecond,
-		Handler:      mux,
+	//处理表单
+	//反序列化job
+	if err = json.Unmarshal([]byte(postjob), &job); err != nil {
+		goto ERR
 	}
-	G_ApiServer = &ApiServer{
-		httpServer: httpServer,
+	if oldjob, err = G_jobMgr.SaveJob(&job); err != nil {
+		goto ERR
 	}
-	go httpServer.Serve(httpListener)
-	return nil
+	//返回值
+	respbyte = common.MakeResponse(0, "成功", oldjob)
+	ctx.String(200, string(respbyte))
+	return
+ERR:
+//致命错误弹出
+	respbyte = common.MakeResponse(-1, "致命错误", string(err.Error()))
+	ctx.String(200, string(respbyte))
+	return
+}
+
+
+func InitApiServer() (err error) {
+	var (
+		router *gin.Engine
+	)
+	//release 模式
+	gin.SetMode(gin.ReleaseMode)
+	router = gin.Default()
+	//注册路由
+	router.POST("/job/save", handleJobSave)
+	router.POST("/job/delete",handleJobDelete)
+	//使用协程去启动
+	go router.Run(":" + strconv.Itoa(G_Config.API_PORT))
+	fmt.Println("web 服务器已经运行在", ":"+strconv.Itoa(G_Config.API_PORT))
+	return
 }

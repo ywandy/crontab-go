@@ -3,6 +3,7 @@ package master
 import (
 	"io/ioutil"
 	"encoding/json"
+	"fmt"
 )
 
 //配置文件的结构体
@@ -36,5 +37,6 @@ func InitConfig(filename string) (err error) {
 	}
 	//赋值单例
 	G_Config = &conf
+	fmt.Println("载入配置文件完成")
 	return
 }
