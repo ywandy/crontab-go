@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/ywandy/crontab-go/common"
-	"encoding/json"
 )
 
 type ApiServer struct {
@@ -24,7 +23,7 @@ func handleJobSave(ctx *gin.Context) {
 		postjob  string //接收post表单的job字段
 		respbyte []byte
 		err      error
-		job      common.Job
+		job      *common.Job
 		oldjob   *common.Job
 	)
 	//解析表单
@@ -36,10 +35,10 @@ func handleJobSave(ctx *gin.Context) {
 	}
 	//处理表单
 	//反序列化job
-	if err = json.Unmarshal([]byte(postjob), &job); err != nil {
+	if job,err = common.UnpackJob([]byte(postjob)); err != nil {
 		goto ERR
 	}
-	if oldjob, err = G_jobMgr.SaveJob(&job); err != nil {
+	if oldjob, err = G_jobMgr.SaveJob(job); err != nil {
 		goto ERR
 	}
 	//返回值

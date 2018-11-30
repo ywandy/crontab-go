@@ -6,6 +6,7 @@ import (
 	"flag"
 	"github.com/ywandy/crontab-go/common"
 	"github.com/ywandy/crontab-go/worker"
+	"time"
 )
 
 var (
@@ -24,7 +25,7 @@ func initEnv() {
 	//线程和cpu数量相同
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	fmt.Println("初始化环境变量完成")
-	fmt.Println("--> 当前程序初始化线程数量:",runtime.NumCPU())
+	fmt.Println("--> 当前程序初始化线程数量:", runtime.NumCPU())
 }
 
 func main() {
@@ -43,7 +44,14 @@ func main() {
 	if err = worker.InitConfig(confFile); err != nil {
 		goto ERR
 	}
-
+	//连接ETCD
+	if err = worker.InitJobMgr(); err != nil {
+		goto ERR
+	}
+	//常驻服务
+	for{
+		time.Sleep(1*time.Second)
+	}
 
 ERR:
 //错误的操作
