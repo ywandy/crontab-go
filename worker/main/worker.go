@@ -44,13 +44,18 @@ func main() {
 	if err = worker.InitConfig(confFile); err != nil {
 		goto ERR
 	}
+	//启动调度器
+	if err = worker.InitScheduler(); err != nil {
+		goto ERR
+	}
+
 	//连接ETCD
 	if err = worker.InitJobMgr(); err != nil {
 		goto ERR
 	}
 	//常驻服务
-	for{
-		time.Sleep(1*time.Second)
+	for {
+		time.Sleep(1 * time.Second)
 	}
 
 ERR:

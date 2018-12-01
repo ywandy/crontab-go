@@ -98,6 +98,7 @@ func (JobMgr *JobMgr) watchJobs() (err error) {
 					//构建一个保存的Event
 					jobEvent = common.BuildJobEvent(common.JOB_EVENT_SAVE, job)
 					fmt.Println(*jobEvent)
+					G_scheduler.PushJobEvent(jobEvent)
 					// TODO: 推给scheduler
 
 				case mvccpb.DELETE: //任务被删除

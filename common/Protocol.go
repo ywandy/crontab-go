@@ -92,5 +92,5 @@ func BuildJobSchedulePlan(job *Job) (jobSchedulerPlan *JobSchedulerPlan,err  err
 		Expr:     expr,
 		NextTime: expr.Next(time.Now()), //从当前时间算出下一次时间
 	}
-	return jobSchedulerPlan
+	return
 }
