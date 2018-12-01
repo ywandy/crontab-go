@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Golang 高性能分布式 Crontab</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <script src="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"></script> -->
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="page-header">
+                <h1>管理后台
+                    <small>Golang分布式Crontab</small>
+                    <small>by Yewei_andy</small>
+                </h1>
+            </div>
+        </div>
+    </div>
+    <!-- 功能按钮 -->
+    <div class="row">
+        <div class="col-md-12">
+            <button type="button" id="add-job" class="btn btn-primary">新建任务</button>
+        </div>
+    </div>
+    <!-- 任务列表 -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default" style="margin-top: 20px">
+                <div class="panel-body">
+                    <table id="job-list" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>任务名称</th>
+                            <th>shell命令</th>
+                            <th>Cron表达式</th>
+                            <th>任务操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <!-- <td class="job-name">任务1</td>
+                            <td class="job-command">echo hello</td>
+                            <td class="job-cronexp">* * * * * * *</td> -->
+                            <td>
+                                <div class="btn-toolbar">
+                                    <!-- <button class="btn btn-info edit-job">编辑</button>
+                                    <button class="btn btn-danger del-job">删除</button>
+                                    <button class="btn btn-warning kill-job">强杀</button> -->
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="edit-job-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">编辑任务</h4>
+        </div>
+        <div class="modal-body"> 
+            <!-- 这里放表单 -->
+            <form>
+                <div class="form-group">
+                    <label for="edit-jobname">任务名称</label>
+                    <input type="text" class="form-control" id="edit-jobname" placeholder="任务名称">
+                </div>
+                <div class="form-group">
+                        <label for="edit-command">shell命令</label>
+                        <input type="text" class="form-control" id="edit-command" placeholder="shell命令">
+                </div>
+                <div class="edit-cronexpr">
+                        <label for="edit-jobname">Cron表达式</label>
+                        <input type="text" class="form-control" id="edit-cronexpr" placeholder="Cron表达式">
+                </div>    
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">不好</button>
+          <!-- 保存按钮应该实现保存的操作 -->
+          <button type="button" id="save-job" class="btn btn-primary" >好</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+<script>
+    //页面加载完成后调用的函数
+    $(document).ready(()=>{
+        //1.绑定按钮的事件处理函数
+        //JavaScript的委托机制，DOM的冒泡的关键原理，只需要在父级绑定即可
+        $('#job-list').on("click",".edit-job",function(event){
+            //取当前job的信息，赋值给input
+            $('#edit-jobname').val($(this).parents("tr").children(".job-name").text());
+            $('#edit-command').val($(this).parents("tr").children(".job-command").text());
+            $('#edit-cronexpr').val($(this).parents("tr").children(".job-cronexp").text());
+            $('#edit-jobname').attr("readonly",true)
+            //弹出模态框
+            $('#edit-job-modal').modal('show')
+        })
+        $('#job-list').on("click",".del-job",function(event){
+            var JobName = $(this).parents("tr").children(".job-name").text();
+            $.ajax({
+                url:'/job/delete',
+                type:'post',
+                dataType:'json',
+                data:{name:JobName},
+                complete:()=>{
+                    window.location.reload()
+                }
+            })
+        })
+        $('#job-list').on("click",".kill-job",function(event){
+            var JobName = $(this).parents("tr").children(".job-name").text();
+            $.ajax({
+                url:'/job/kill',
+                type:'post',
+                dataType:'json',
+                data:{name:JobName},
+                complete:()=>{
+                    window.location.reload()
+                }
+            })
+        })
+        //保存任务
+        $('#save-job').on("click",function(event){
+            var jobInfo = {
+                name:$('#edit-jobname').val(),
+                command:$('#edit-command').val(),
+                cron_expr:$('#edit-cronexpr').val(),
+            }
+            $.ajax({
+                url:'/job/save',
+                type:'post',
+                dataType:'json',
+                data:{job:JSON.stringify(jobInfo)},
+                complete:()=>{
+                    window.location.reload()
+                }
+            })
+            console.log(jobInfo);
+        })
+        //新建任务
+        $('#add-job').on("click",function(event){
+            //清空
+            $('#edit-jobname').attr("readonly",false)
+            $('#edit-jobname').val("");
+            $('#edit-command').val("");
+            $('#edit-cronexpr').val("");
+            //弹出模态框
+            $('#edit-job-modal').modal('show')
+        })
+        //2.定义一个函数用于刷新任务列表
+        function refreshJobList(){
+            console.log("test");
+            $.ajax({
+                url:'/job/list',
+                dataType:'json',
+                success:(resp)=>{
+                    console.log(resp);
+                    if(resp.errno!=0){//服务出错的处理
+                        alert("服务端出错")
+                    }else{
+                        //任务数组
+                        var jobList = resp.data
+                        //遍历任务，填充table
+                        jobList.forEach(element => {
+                            var tr = $("<tr>")
+                            tr.append($('<td class="job-name">').html(element.name))
+                            tr.append($('<td class="job-command">').html(element.command))
+                            tr.append($('<td class="job-cronexp">').html(element.cron_expr))
+                            var toolbar = $('<div class="btn-toolbar">')
+                                .append('<button class="btn btn-info edit-job">编辑</button>')
+                                .append('<button class="btn btn-danger del-job">删除</button>')
+                                .append('<button class="btn btn-warning kill-job">强杀</button>')
+                            tr.append($('<td>').append(toolbar))
+                            $('#job-list tbody').append(tr)
+                        });
+                    } 
+                }
+            })
+        }
+        refreshJobList()
+    })
+    
+</script>
+</body>
+</html>
