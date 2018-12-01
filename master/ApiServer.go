@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"github.com/ywandy/crontab-go/common"
+	"net/http"
+	"github.com/gin-gonic/contrib/static"
 )
 
 type ApiServer struct {
@@ -35,7 +37,7 @@ func handleJobSave(ctx *gin.Context) {
 	}
 	//处理表单
 	//反序列化job
-	if job,err = common.UnpackJob([]byte(postjob)); err != nil {
+	if job, err = common.UnpackJob([]byte(postjob)); err != nil {
 		goto ERR
 	}
 	if oldjob, err = G_jobMgr.SaveJob(job); err != nil {
@@ -106,11 +108,11 @@ ERR:
 
 //杀死某个任务
 // post   name=job1
-func handleJobKill(ctx *gin.Context){
-	var(
-		err error
+func handleJobKill(ctx *gin.Context) {
+	var (
+		err            error
 		postkillername string
-		respbyte []byte
+		respbyte       []byte
 	)
 	postkillername = ctx.PostForm("name")
 	//判断表单
@@ -119,7 +121,7 @@ func handleJobKill(ctx *gin.Context){
 		ctx.String(200, string(respbyte))
 	}
 	//执行killer操作
-	if err = G_jobMgr.KillJob(postkillername);err!=nil{
+	if err = G_jobMgr.KillJob(postkillername); err != nil {
 		goto ERR
 	}
 	//正常的返回
@@ -133,6 +135,11 @@ ERR:
 	return
 }
 
+//静态文件的handler
+func handleHttpStatic(ctx *gin.Context) {
+	ctx.HTML(http.StatusOK, "index.html", nil)
+}
+
 func InitApiServer() (err error) {
 	var (
 		router *gin.Engine
@@ -140,11 +147,15 @@ func InitApiServer() (err error) {
 	//release 模式
 	gin.SetMode(gin.ReleaseMode)
 	router = gin.Default()
-	//注册路由
+	//这是加载静态的路径
+	//router.LoadHTMLGlob(G_Config.HtmlWebroot)
+	//static中间件,用于展示静态文件
+	router.Use(static.Serve("/",static.LocalFile("webroot",true)))
+	//注册API路由
 	router.POST("/job/save", handleJobSave)
 	router.POST("/job/delete", handleJobDelete)
 	router.GET("/job/list", handleJobList)
-	router.POST("/job/kill",handleJobKill)
+	router.POST("/job/kill", handleJobKill)
 	//使用协程去启动
 	go router.Run(":" + strconv.Itoa(G_Config.API_PORT))
 	fmt.Println("web 服务器已经运行在", ":"+strconv.Itoa(G_Config.API_PORT))
