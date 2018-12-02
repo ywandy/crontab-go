@@ -27,6 +27,12 @@
 			"revisionTime": "2018-03-09T02:03:25Z"
 		},
 		{
+			"checksumSHA1": "97BsbXOiZ8+Kr+LIuZkQFtSj7H4=",
+			"path": "github.com/coreos/go-semver/semver",
+			"revision": "e214231b295a8ea9479f11b70b35d5acf3556d9b",
+			"revisionTime": "2018-01-08T23:09:05Z"
+		},
+		{
 			"checksumSHA1": "EK/vbAxOP4lny0hswpcES9Mw62w=",
 			"path": "github.com/dustin/go-broadcast",
 			"revision": "f664265f5a662fb4d1df7f3533b1e8d0e0277120",
@@ -43,6 +49,12 @@
 			"path": "github.com/gin-gonic/autotls",
 			"revision": "be87bd5ef97b7398e468c35ad266aabf099a095b",
 			"revisionTime": "2018-04-26T09:12:46Z"
+		},
+		{
+			"checksumSHA1": "xJnBpChUm4Oeyt2QSCqYpStnkTk=",
+			"path": "github.com/gin-gonic/contrib/static",
+			"revision": "54170a7b0b4b2f9219c79599b1b03830a5a7d68d",
+			"revisionTime": "2018-11-01T07:28:42Z"
 		},
 		{
 			"checksumSHA1": "JVFRca2/J31CSk8n9bhlwIH43D8=",
@@ -99,6 +111,12 @@
 			"revisionTime": "2018-11-28T19:23:52Z"
 		},
 		{
+			"checksumSHA1": "m8B3L3qJ3tFfP6BI9pIFr9oal3w=",
+			"path": "github.com/gorhill/cronexpr",
+			"revision": "88b0669f7d75f171bd612b874e52b95c190218df",
+			"revisionTime": "2018-04-27T10:00:37Z"
+		},
+		{
 			"checksumSHA1": "Cq9h7eDNXXyR/qJPvO8/Rk4pmFg=",
 			"path": "github.com/jessevdk/go-assets",
 			"revision": "4f4301a06e153ff90e17793577ab6bf79f8dc5c5",
@@ -151,6 +169,30 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "856da096dbdf68ec809a132c863f3d7e3f40b09f",
 			"revisionTime": "2018-11-27T17:52:09Z"
+		},
+		{
+			"checksumSHA1": "Q4ZZnZeTbMHrXKZxTd6EQjSf4uY=",
+			"path": "go.etcd.io/etcd/pkg/pathutil",
+			"revision": "dedae6eb7c253635e70403a1fb04842700277b23",
+			"revisionTime": "2018-11-28T22:03:05Z"
+		},
+		{
+			"checksumSHA1": "f0XHkJGhyhBIlx+AuLyv2lc519w=",
+			"path": "go.etcd.io/etcd/pkg/srv",
+			"revision": "dedae6eb7c253635e70403a1fb04842700277b23",
+			"revisionTime": "2018-11-28T22:03:05Z"
+		},
+		{
+			"checksumSHA1": "VL9HsNKbbCb1Ntj9VcFCfiTmjmM=",
+			"path": "go.etcd.io/etcd/pkg/types",
+			"revision": "dedae6eb7c253635e70403a1fb04842700277b23",
+			"revisionTime": "2018-11-28T22:03:05Z"
+		},
+		{
+			"checksumSHA1": "Vyt9fFWEV2/sagq9KmkVbPn+LFM=",
+			"path": "go.etcd.io/etcd/version",
+			"revision": "dedae6eb7c253635e70403a1fb04842700277b23",
+			"revisionTime": "2018-11-28T22:03:05Z"
 		},
 		{
 			"checksumSHA1": "ETfjuu5F8ejF27iatik4uPga2VQ=",
