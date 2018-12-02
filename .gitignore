@@ -1,1 +1,4 @@
 *.exe
+/vendor/*
+!/vendor/vendor.json
+.idea
