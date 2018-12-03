@@ -38,7 +38,7 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 
 
 func (scheduler *Scheduler)TryStartJob(jobPlan *common.JobSchedulerPlan){
-	
+
 }
 
 //重新计算任务调度的状态
